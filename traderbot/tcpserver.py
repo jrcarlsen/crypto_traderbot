@@ -83,6 +83,9 @@ class Connection:
             self.disconnect()
             return
 
+        # Strip \r
+        data = data.replace('\r', '')
+
         # Add the data to our input buffer
         debug(self, "<<< %s" % data)
         self.buffer_in += data

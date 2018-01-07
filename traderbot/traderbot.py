@@ -7,6 +7,8 @@ import time
 import pickle
 
 from bittrex import bittrex
+import traderbot_commands
+import traderbot_logic
 
 ################################################################################
 
@@ -21,8 +23,9 @@ class Trade:
         self.summary = None
 
     def __repr__(self):
-        return "<Trade currency='%s' buy='%s' bid_current='%s' bid_high='%s' buy_diff='%s' high_diff='%s'>" % (
-                self.get_currency(), self.data.get('buy', 0), self.current_bid(), self.data['bid_high'], self.buy_diff(), self.high_diff())
+        return "<Trade id='%i' currency='%s' buy='%f' bid_current='%f' bid_high='%f' buy_diff='%0.2f' high_diff='%0.2f' best='%0.2f'>" % (
+                self.get_id(), self.data.get('currency', '-'), self.data.get('buy', 0), self.current_bid(), self.data['bid_high'], self.buy_diff(), 
+                self.high_diff(), self.best_diff())
     
     def _update_summary(self):
         result = self.tb.api.get_marketsummary('BTC-%s' % self.get_currency())
@@ -40,13 +43,24 @@ class Trade:
             self.data['buy'] = self.current_bid()
         self.save()
 
-    def load(self, filename):
-        self.filename = filename
-        self.data = pickle.load(open(self.filename, 'rb'))
+    def get_id(self):
+        return self.data.get('id', -1)
+
+    def filename(self, tradeid):
+        return '%s/%s' % (TRADE_PATH, tradeid)
+
+    def load(self, tradeid=None):
+        if tradeid:
+            filename = self.filename(tradeid)
+        else:
+            filename = self.filename(self.get_id())
+
+        self.data = pickle.load(open(filename, 'rb'))
         print "Loaded data for:", self.data['currency']
 
     def save(self):
-        pickle.dump(self.data, open(self.filename, 'wb'))
+        filename = self.filename(self.get_id())
+        pickle.dump(self.data, open(filename, 'wb'))
 
     def buy_diff(self):
         """Difference in percent from the buying price"""
@@ -56,6 +70,9 @@ class Trade:
         """Difference in percent from the highest bid we've seen"""
         return (self.current_bid()/self.data['bid_high']*100)-100
 
+    def best_diff(self):
+        return (self.data['bid_high']/self.data['buy']*100)-100
+
     def get_currency(self):
         if not self.data:
             return None
@@ -64,9 +81,16 @@ class Trade:
     def current_bid(self):
         return self.summary['Bid']
 
+    def buy(self, rate, amount):
+#        print "BTC:", self.api.get_balance('BTC')['result']['Balance']
+        return False
+
+    def sell(self, rate, amount):
+        return False
+
     def run(self):
         self._update_summary()
-
+        traderbot_logic.execute(self)
 
 ################################################################################
 
@@ -77,29 +101,54 @@ class TraderBot:
         self._load_trades()
 
     def _load_trades(self):
-        for filename in os.listdir(TRADE_PATH):
-            if filename[0] == '.':
+        for tradeid in os.listdir(TRADE_PATH):
+            if tradeid[0] == '.':
                 continue
 
             t = Trade(self)
-            t.load(TRADE_PATH+filename)
-            self.trades[t.get_currency()] = t
+            t.load(tradeid)
+            self.trades[tradeid] = t
 
     def run(self):
-#        print "BTC:", self.api.get_balance('BTC')['result']['Balance']
         for trade in self.trades.values():
             trade.run()
 
     def status(self):
-        currencies = self.trades.keys()
-        currencies.sort()
+        tradeids = self.trades.keys()
+        tradeids.sort()
         print "Tracked coins:"
-        for currency in currencies:
-            print self.trades[currency]
+        for tradeid in tradeids:
+            print self.trades[tradeid]
         print
 
-    def execute_command(self, command):
-        print "execute", command
-        return "{'success': true}\n"
+    def execute_command(self, line):
+        if not line:
+            return "" # FIXME: Should be \n only
+
+        if line[0] == '{':
+            line = "json "+line 
+
+        cmd = line.split(' ', 1)[0]
+        if traderbot_commands.commands.has_key(cmd):
+            try:
+                return traderbot_commands.commands[cmd](self, line)
+            except Exception as e:
+                print e
+                return "Error: Command did not execute correctly.\n"
+        else:
+            return "Error: Bad command.\n"
+
+    def new_trade(self, newdata):
+        t = Trade(self)
+        t.data = {
+            'id': int(newdata['tradeid']),
+            'created': time.time(),
+            'confidence': int(newdata['confnumber']),
+            'exchange': newdata['exchange'].lower(),
+            'currency': newdata['currency'],
+            'amount':   float(newdata['maxamount']),
+        }
+        t.save()
+        self.trades[t.get_id()] = t
 
 ################################################################################
