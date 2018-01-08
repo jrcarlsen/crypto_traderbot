@@ -1,36 +1,36 @@
 # MODULES
-## Logic
+## Logic modules
 
 ### Signal
-#### get_exchange()
-```python
-exchange = signal.get_exchange(exchange, market)
-```
+#### get_exchange(exchange_name, market))
 Returns an Exchange object, or False if the market or Exchange is not supported.
+```python
+exchange = signal.get_exchange('Bittrex', 'BTC-LTC')
+```
 #### age()
 How many seconds since the signal was generated.
 
 ### Exchange
-#### buy()
+#### exchange**.buy**(amount, rate=None)
+Returns True if the trade went through. If a rate it 
 ```python
-rate, amount = exchange.buy(amount, rate)
+rate, amount = exchange.buy(0.00021, rate)
 ```
-Returns the traded rate and amount
 
-#### sell()
-Try to sell on the exchange.
+#### exchange.**sell(amount=None, rate=None)**
+Try to sell on the exchange. If amount is not supplied, it will try and sell 
+all. If rate is not supplied it will try and sell at the current rate.
 ```python
 rate, amount = exchange.sell(amount, rate)
 ```
 Returns the traded rate and amount
 
-```
 
-#### bought()
+#### exchange.bought()
 Get list of bought coins
-#### sold()
+#### exchange.sold()
 Get list of sold coins
-#### orderbook()
+#### exchange.orderbook()
 Get the current orderbook
-#### openorders()
+#### exchange.**openorders**()
 Get a list of the current open orders
