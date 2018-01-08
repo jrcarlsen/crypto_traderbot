@@ -58,7 +58,17 @@ if exchange.sell(amount=0.16, rate=0.88):
 
 
 #### exchange.bought()
-Get list of bought coins
+Get list of bought coins.
+
+The return value is a list of `(amount, rate)`.
+
+Usage:
+```python
+buys = exchange.bought()
+for buy in buys:
+    print amount, rate
+```
+
 #### exchange.sold()
 Get list of sold coins
 #### exchange.orderbook()
