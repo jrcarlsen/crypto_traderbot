@@ -76,6 +76,14 @@ Get list of sold coins
 Get the current orderbook
 #### exchange.openorders()
 Get a list of the current open orders
+#### exchange.high()
+Returns the highest bid seen.
+#### exchange.low()
+Returns the lowest bid seen.
+#### exchange.avg_buy()
+The return value is the average buy rate.
+#### exchange.avg_sell()
+The return value is the average sell rate.
 #### exchange.diff_high()
 The return value is the difference between the highest rate and the current rate in percent.
 #### exchange.diff_buy()
