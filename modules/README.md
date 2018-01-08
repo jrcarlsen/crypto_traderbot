@@ -5,7 +5,7 @@
 #### signal.get_exchange(exchange_name, market))
 Get an `Exchange` object so we can perform trades and track exchange rates.
 
- * exchange_name:   Name of the exchange.
+ * exchange_name:   Name of the exchange. (case insensitve)
  * market:          Which market we wish to trade on.
 
 The return value is an `Exchange` object, or `None` if the exchange or market is not supported.
@@ -65,3 +65,8 @@ Get list of sold coins
 Get the current orderbook
 #### exchange.openorders()
 Get a list of the current open orders
+#### exchange.diff_high()
+The return value is the difference between the highest rate and the current rate in percent.
+#### exchange.diff_buy()
+The return value is the difference between the buy rate and the current rate in percent.
+
