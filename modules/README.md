@@ -22,8 +22,10 @@ Try to sell on the exchange.
  * amount:  if provided, the amount of coins to try and sell, or if not provided try to sell all coins.
  * rate:    if provided, the rate to try and sell the coins at, or if not provided sell at the current rate.
  
+Usage:
 ```python
-rate, amount = exchange.sell(amount, rate)
+if exchange.sell(amount=0.2, rate=0.88):
+    print "success"
 ```
 Returns the traded rate and amount
 
