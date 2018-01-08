@@ -2,11 +2,12 @@
 ## Logic modules
 
 ### Signal
-#### signal.get_exchange(exchange_name, market))
+#### signal.get_exchange(exchange_name, market, simulate=False))
 Get an `Exchange` object so we can perform trades and track exchange rates.
 
- * exchange_name:   Name of the exchange. (case insensitve)
+ * exchange_name:   Name of the exchange (case insensitve).
  * market:          Which market we wish to trade on.
+ * simulate:        If set to `True` all trades be simulated. Nothing will be sold or bought.
 
 The return value is an `Exchange` object, or `None` if the exchange or market is not supported.
 
