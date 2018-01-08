@@ -12,19 +12,24 @@ How many seconds since the signal was generated.
 
 ### Exchange
 #### exchange.buy(amount, rate=None)
-Returns True if the trade went through. If a rate it 
+Try to buy on the exchange.
+ * amount:  the amount of coins to try and buy.
+ * rate:    if provided, the rate to try and buy the coins at, or if not provided buy at the current rate.
+The return value is `True` if the order was atleast partially completed, otherwise `False` is returned.
+Usage:
 ```python
-rate, amount = exchange.buy(0.00021, rate)
+if exchange.buy(amount=0.20, rate=0.80):
+    print "success"
 ```
 
 #### exchange.sell(amount=None, rate=None)
 Try to sell on the exchange. 
  * amount:  if provided, the amount of coins to try and sell, or if not provided try to sell all coins.
  * rate:    if provided, the rate to try and sell the coins at, or if not provided sell at the current rate.
- 
+The return value is `True` if the order was atleast partially completed, otherwise `False` is returned. 
 Usage:
 ```python
-if exchange.sell(amount=0.2, rate=0.88):
+if exchange.sell(amount=0.16, rate=0.88):
     print "success"
 ```
 Returns the traded rate and amount
