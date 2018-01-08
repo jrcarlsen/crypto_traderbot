@@ -6,9 +6,10 @@ import os
 import time
 import pickle
 
-from bittrex import bittrex
-import traderbot_commands
+import config
 import traderbot_logic
+import traderbot_commands
+from bittrex import bittrex
 
 ################################################################################
 
@@ -31,17 +32,17 @@ class Trade:
                 self.high_diff(), self.best_diff(), self.get_profit())
     
     def _update_summary(self):
-        if time.time() - self.summary_age < 15: # FIXME: Poll delay configured here
+        if time.time() - self.summary_age < config.POLL_DELAY: # FIXME: Poll delay configured here
             return False
         self.summary_age = time.time()
 
         result = self.tb.api.get_marketsummary('BTC-%s' % self.get_currency())
         if not result.has_key('success'):
-            print self.get_id(), "bt req failed"
+            #print self.get_id(), "bt req failed"
             return False
         if result['success'] != True:
-            print self.get_id(), "bt req failed, not success"
-            self.summary_age = time.time()+300 # Retry in 5 minutes
+            #print self.get_id(), "bt req failed, not success"
+            self.summary_age = time.time()+600 # Retry in 10 minutes
             return False
         self.summary = result['result'][0]
         self._update_data()
