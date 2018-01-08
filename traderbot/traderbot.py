@@ -21,17 +21,27 @@ class Trade:
         self.tb = traderbot
         self.data = None
         self.summary = None
+        self.summary_age = 0
 
     def __repr__(self):
-        return "<Trade id='%i' currency='%s' buy='%f' bid_current='%f' bid_high='%f' buy_diff='%0.2f' high_diff='%0.2f' best='%0.2f'>" % (
+        if not self.summary:
+            return "<Trade id='%s' currency='%s'>" % (self.get_id(), self.data.get('currency', '-'))
+        return "<Trade id='%i' currency='%s' buy='%0.8f' bid_current='%0.8f' bid_high='%f' buy_diff='%0.2f' high_diff='%0.2f' best='%0.2f' profit='%s'>" % (
                 self.get_id(), self.data.get('currency', '-'), self.data.get('buy', 0), self.current_bid(), self.data['bid_high'], self.buy_diff(), 
-                self.high_diff(), self.best_diff())
+                self.high_diff(), self.best_diff(), self.get_profit())
     
     def _update_summary(self):
+        if time.time() - self.summary_age < 15: # FIXME: Poll delay configured here
+            return False
+        self.summary_age = time.time()
+
         result = self.tb.api.get_marketsummary('BTC-%s' % self.get_currency())
         if not result.has_key('success'):
+            print self.get_id(), "bt req failed"
             return False
         if result['success'] != True:
+            print self.get_id(), "bt req failed, not success"
+            self.summary_age = time.time()+300 # Retry in 5 minutes
             return False
         self.summary = result['result'][0]
         self._update_data()
@@ -45,6 +55,15 @@ class Trade:
 
     def get_id(self):
         return self.data.get('id', -1)
+
+    def get_profit(self):
+        sold_rate = self.data.get('sold', False)
+        if not sold_rate:
+            return None
+        bought_rate = self.data.get('buy', False)
+        if not bought_rate:
+            return None
+        return (sold_rate/bought_rate*100)-100
 
     def filename(self, tradeid):
         return '%s/%s' % (TRADE_PATH, tradeid)
@@ -79,17 +98,20 @@ class Trade:
         return self.data['currency']
 
     def current_bid(self):
-        return self.summary['Bid']
+        return self.summary.get('Bid', None)
 
     def buy(self, rate, amount):
 #        print "BTC:", self.api.get_balance('BTC')['result']['Balance']
         return False
 
     def sell(self, rate, amount):
+        self.data['sold'] = rate
         return False
 
+    def update(self):
+        return self._update_summary()
+
     def run(self):
-        self._update_summary()
         traderbot_logic.execute(self)
 
 ################################################################################
@@ -108,10 +130,6 @@ class TraderBot:
             t = Trade(self)
             t.load(tradeid)
             self.trades[tradeid] = t
-
-    def run(self):
-        for trade in self.trades.values():
-            trade.run()
 
     def status(self):
         tradeids = self.trades.keys()
@@ -150,5 +168,15 @@ class TraderBot:
         }
         t.save()
         self.trades[t.get_id()] = t
+
+    def run(self, timeout=1):
+        ts = time.time()
+        for trade in self.trades.values():
+            if time.time()-ts > timeout:
+                break
+            trade.update()
+
+        for trade in self.trades.values():
+            trade.run()
 
 ################################################################################

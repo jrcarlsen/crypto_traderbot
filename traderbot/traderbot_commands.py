@@ -27,15 +27,34 @@ def cmd_noop(traderbot, line):
 def cmd_stop(traderbot, line):
     raise SystemExit
 
-def cmd_list(traderbot, line):
+def cmd_list_invalid(traderbot, line):
+    return func_list(traderbot, show='invalid')
+
+def cmd_list_sold(traderbot, line):
+    return func_list(traderbot, show='sold')
+
+def cmd_list_active(traderbot, line):
+    return func_list(traderbot, show='active')
+
+def func_list(traderbot, show):
     tradelist = list()
     tradeids = traderbot.trades.keys()
+    #tradeids = [int(x) for x in tradeids]
     tradeids.sort()
-    print tradeids
 
     for tradeid in tradeids:
-        print tradeid
-        tradelist.append(str(traderbot.trades[tradeid]))
+        trade = traderbot.trades[tradeid]
+        if trade.data.get('sold', False):
+            ttype = 'sold'
+        else:
+            ttype = 'active'
+
+        if not trade.summary:
+            ttype = 'invalid'
+
+        #  tradelist.append('[31m'+str(trade)+'[0m')
+        if ttype == show:
+            tradelist.append(str(trade))
 
     result = "\n".join(tradelist)
     return result+"\n"
@@ -44,7 +63,10 @@ def cmd_list(traderbot, line):
 
 commands = {
     'json': json_command,
-    'list': cmd_list,
+    'list': cmd_list_active,
+    'active': cmd_list_active,
+    'sold': cmd_list_sold,
+    'invalid': cmd_list_invalid,
     'stop': cmd_stop,
     '': cmd_noop,
 }

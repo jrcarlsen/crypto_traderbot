@@ -16,8 +16,7 @@ tcpserver.callback = trader.execute_command
 
 ts = time.time()
 while True:
-    elapsed_time = time.time()-ts
-    tcpserver.run(timeout=config.LOOP_DELAY-elapsed_time)
+    tcpserver.run(timeout=config.LOOP_DELAY)
     
     elapsed_time = time.time()-ts
     if elapsed_time < config.LOOP_DELAY:
