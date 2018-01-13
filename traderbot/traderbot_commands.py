@@ -45,11 +45,11 @@ def cmd_list_exchanges(traderbot, cmd_line):
 def cmd_list_signals(traderbot, cmd_line):
     result = []
     for signal_name, signal_object in traderbot.signals.items():
-        result.append(str(signal_object))
+        result.append(signal_object.description())
         for logic_name, logic_object in signal_object.logic.items():
-            result.append("- "+str(logic_object))
+            result.append("- "+logic_object.description())
             for market_name, market_object in logic_object.markets.items():
-                result.append("--  "+str(market_object))
+                result.append("--  "+market_object.description())
     return '\n'.join(result)+"\n"
 
 def cmd_list_servers(traderbot, cmd_line):

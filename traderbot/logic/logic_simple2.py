@@ -17,7 +17,6 @@ class Logic(LogicBase):
     
     def __init__(self, signal, config):
         LogicBase.__init__(self)
-        print self.name, signal, config
         self.signal = signal
        
         # Try to get an exchange object we can work with, if we fail to get the
@@ -32,7 +31,6 @@ class Logic(LogicBase):
             market.set_callback('market', self.market_update)
 
     def market_update(self, market):
-        print self.name, "market_update"
         # If we haven't bought anything yet, then lets buy at the current rate.
         if not market.bought():
             market.buy(market.bid_current(), self.signal.get('amount'))
@@ -48,7 +46,6 @@ class Logic(LogicBase):
             market.sell()
 
     def run(self):
-        print self.name, "run"
         self._update_markets()
 
 ################################################################################
