@@ -1,0 +1,23 @@
+class LogicBase:
+    data = {'market_data': {}}
+    killed = False
+    # How often do we want run() to be called?
+    interval = 5
+    lastrun = 0
+
+    def save(self):
+        self.data['market_data'] = {}
+        for market_name, market_object in self.markets.items():
+            self.data['market_data'][market_name] = market_object.data
+
+    def register_market(self, market_object, market_name='default'):
+        if not market_object:
+            return False
+        print self, self.markets
+        print market_object, "register"
+        self.markets[market_name] = market_object
+        print self, self.markets
+
+    def _update_markets(self):
+        for market_name, market_object in self.markets.items():
+            market_object.run()

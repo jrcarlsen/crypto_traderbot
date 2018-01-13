@@ -2,28 +2,32 @@
 #
 ################################################################################
 
-import time
-
 import config
-from traderbot import tcpserver
-from traderbot import traderbot
+
+from traderbot.traderbot import TraderBot
+from traderbot.logic import logic_simple
+from traderbot.logic import logic_simple2
+from traderbot.server import server_tcpserver
+from traderbot.exchange import exchange_bittrex
 
 ################################################################################
 
-trader     = traderbot.TraderBot(config.API_KEY, config.API_SECRET)
-tcpserver  = tcpserver.TCPServer(port=config.TCP_PORT)
-tcpserver.callback = trader.execute_command
+traderbot = TraderBot(config)
 
-ts = time.time()
+# Register servers
+traderbot.register_server(server_tcpserver, config.tcpserver)
+
+# Register Exchanges
+traderbot.register_exchange(exchange_bittrex, config.bittrex)
+
+# Register Logic
+traderbot.register_logic(logic_simple.Logic, config.logic)
+traderbot.register_logic(logic_simple2.Logic, config.logic)
+
+# Run the traderbot loop until it wants to quit
 while True:
-    tcpserver.run(timeout=config.LOOP_DELAY)
-    
-    elapsed_time = time.time()-ts
-    if elapsed_time < config.LOOP_DELAY:
-        continue
-
-    trader.run()
-    ts = time.time()
-
+    if not traderbot.run():
+        raise SystemExit
+   
 ################################################################################
 

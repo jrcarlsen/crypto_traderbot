@@ -123,15 +123,16 @@ class Connection:
         self.buffer_in = lines[-1]
         return lines[:-1]
 
-class TCPServer:
+class Server:
+    name = "TCPServer"
     epoll = select.epoll()
     sockets = {}
 
-    def __init__(self, port):
+    def __init__(self, traderbot, config):
         # Create a Server Socket for incoming connections
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.bind(('0.0.0.0', port))
+        self.socket.bind(('0.0.0.0', config['LISTEN_PORT']))
         self.socket.listen(1)
         self.socket.setblocking(0)
 
@@ -180,6 +181,9 @@ class TCPServer:
     def event(self, event):
         assert(event == 1)
         connection = Connection(self, self.socket.accept())
+
+    def register_callback(self, callback):
+        self.callback = callback
 
     def process_line(self, connection, line):
         connection.send(self.callback(line))

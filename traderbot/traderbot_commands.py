@@ -15,8 +15,9 @@ def json_command(traderbot, line):
         return '{"success": false, "reason": "bad commands"}\n'
 
     try:
-        traderbot.new_trade(jsondict)
+        traderbot.new_signal(jsondict)
     except Exception as e:
+        raise 
         return '{"success": false, "reason": "exception in code: `%s`"}\n' % e
 
     return '{"success": true}\n'
@@ -35,6 +36,26 @@ def cmd_list_sold(traderbot, line):
 
 def cmd_list_active(traderbot, line):
     return func_list(traderbot, show='active')
+
+################################################################################
+
+def cmd_list_exchanges(traderbot, cmd_line):
+    return `traderbot.exchanges`+'\n'
+
+def cmd_list_signals(traderbot, cmd_line):
+    result = []
+    for signal_name, signal_object in traderbot.signals.items():
+        result.append(str(signal_object))
+        for logic_name, logic_object in signal_object.logic.items():
+            result.append("- "+str(logic_object))
+            for market_name, market_object in logic_object.markets.items():
+                result.append("--  "+str(market_object))
+    return '\n'.join(result)+"\n"
+
+def cmd_list_servers(traderbot, cmd_line):
+    return `traderbot.servers`+'\n'
+
+################################################################################
 
 def func_list(traderbot, show):
     tradelist = list()
@@ -62,16 +83,38 @@ def func_list(traderbot, show):
 ################################################################################
 
 commands = {
-    'json': json_command,
-    'list': cmd_list_active,
-    'active': cmd_list_active,
-    'sold': cmd_list_sold,
-    'invalid': cmd_list_invalid,
-    'stop': cmd_stop,
-    '': cmd_noop,
+    'json':     json_command,
+    'exchanges': cmd_list_exchanges,
+    'signals':   cmd_list_signals,
+    'servers':   cmd_list_servers,
+    'list':     cmd_list_active,
+    'active':   cmd_list_active,
+    'sold':     cmd_list_sold,
+    'invalid':  cmd_list_invalid,
+    'stop':     cmd_stop,
+    '':         cmd_noop,
 }
 
 ################################################################################
 
-# {"tradeid":208,"currency":"OMG","exchange":"HitBTC","confnumber":1,"maxamount":0.123,"command":"trade"}
+def execute_command(traderbot, full_command):
+    # Return if we got no command to execute
+    if not full_command:
+        return ""
 
+    # JSON commands starts with "{"
+    if full_command[0] == '{':
+        full_command = "json "+full_command
+
+    command = full_command.split(' ', 1)[0]
+    if commands.has_key(command):
+        try:
+            return commands[command](traderbot, full_command)
+        except Exception as e:
+            print "COMMAND EXCEPTION:", command
+            print e
+            raise
+            return "Error: Command did not execute correctly.\n"
+    return "Error: Bad command.\n"
+
+################################################################################
