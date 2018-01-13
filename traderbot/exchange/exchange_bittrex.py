@@ -9,10 +9,9 @@ from traderbot.exchange import ExchangeBase
 
 class Exchange(ExchangeBase):
     name = 'Bittrex'
-    market_data = {}
-    data = {}
 
     def __init__(self, tradebot, config):
+        ExchangeBase.__init__(self)
         self.config = config
         self.bittrex = bittrex.Bittrex(config['API_KEY'], config['API_SECRET'])
 

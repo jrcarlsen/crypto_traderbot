@@ -83,10 +83,14 @@ class TraderBot:
         for server in self.servers.values():
             server.run(timeout=each_timeout)
 
+    def run_exchanges(self):
+        for exchange_name, exchange_object in self.exchanges.items():
+            exchange_object.run()
+
     def run(self):
         # Start our timer and run through the exchange updates
         ts = time.time()
-#        self.run_exchanges()
+        self.run_exchanges()
 
         # Run our signals
         remaining_time = max(0, self.config.LOOP_DELAY-(time.time()-ts))

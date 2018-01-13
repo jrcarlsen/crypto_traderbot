@@ -14,6 +14,7 @@ class Signal:
         self.data = {'id': load_id, 'logic': {}}
         self.logic = {}
         self.lastrun = 0
+        self.created = time.time()
        
         # If an ID was provided, then we need to load it from disk
         if load_id:
@@ -24,6 +25,9 @@ class Signal:
 
     def _myfilename(self):
         return '%s/%s' % (config.SIGNAL_PATH, self.get_id())
+
+    def age(self):
+        return time.time()-self.created
 
     def init(self):
         self.save()
