@@ -6,7 +6,7 @@ class Market:
         self.callback = {}
         self._init_values()
 
-    def __repr__(self):
+    def description(self):
         return "<Market market='{market}' exchange='{exchange}' bid='{bid}' highest='{highest}' lowest='{lowest}'>".format(**{
             'exchange':     self.exchange.get_name(),
             'market':       self.market,
@@ -24,8 +24,8 @@ class Market:
         }
 
     def _update_values(self):
-        self.data['bid_lowest'] = min(self.bid_lowest(), self.bid_current)
-        self.data['bid_highest'] = max(self.bid_highest(), self.bid_current)
+        self.data['bid_lowest'] = min(self.bid_lowest(), self.bid_current())
+        self.data['bid_highest'] = max(self.bid_highest(), self.bid_current())
 
     def _get_value(self, key):
         return self.data.get(key, None)

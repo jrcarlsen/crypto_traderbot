@@ -20,7 +20,7 @@ class Signal:
         if load_id:
             self.load()
 
-    def __repr__(self):
+    def description(self):
         return "<Signal %i>" % self.data['id']
 
     def _myfilename(self):

@@ -8,7 +8,7 @@ class LogicBase:
         self.killed = False
         self.lastrun = 0
 
-    def __repr__(self):
+    def description(self):
         return "<{name}>".format(**{
             'name': self.name,
         })
