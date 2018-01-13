@@ -35,7 +35,6 @@ class Exchange(ExchangeBase):
         if cached and time.time() - self.data['last_market_poll'] < self.config['POLL_FREQUENCY']:
             return False
 
-        print self, "market update"
         # We want to update the poll time, even if we don't get any data, just to avoid
         # flooding the api in case of a problem.
         self.data['last_market_poll'] = time.time()
@@ -63,7 +62,6 @@ class Exchange(ExchangeBase):
         if cached and time.time() - self.data['last_balance_poll'] < self.config['POLL_FREQUENCY']:
             return False
 
-        print self, "balance update"
 
         self.data['last_balance_poll'] = time.time()
 

@@ -13,7 +13,6 @@ class ExchangeBase:
 
     def get_market(self, market, key, cached=True):
         self._update_markets(cached)
-        print market, self.market_data[market]
         return self.market_data[market][key]
 
     def get_balance(self, currency, key, cached=True):

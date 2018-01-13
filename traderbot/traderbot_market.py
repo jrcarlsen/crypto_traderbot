@@ -1,11 +1,19 @@
 class Market:
-    data = {}
-
     def __init__(self, exchange_object, market_name):
         self.exchange = exchange_object
         self.market = market_name
+        self.data = {}
         self.callback = {}
         self._init_values()
+
+    def __repr__(self):
+        return "<Market market='{market}' exchange='{exchange}' bid='{bid}' highest='{highest}' lowest='{lowest}'>".format(**{
+            'exchange':     self.exchange.get_name(),
+            'market':       self.market,
+            'bid':          self.bid_current(),
+            'highest':      self.bid_highest(),
+            'lowest':       self.bid_lowest(),
+        })
 
     def _init_values(self):
         self.data = {
@@ -17,7 +25,7 @@ class Market:
 
     def _update_values(self):
         self.data['bid_lowest'] = min(self.bid_lowest(), self.bid_current)
-        self.data['bid_highest'] = min(self.bid_highest(), self.bid_current)
+        self.data['bid_highest'] = max(self.bid_highest(), self.bid_current)
 
     def _get_value(self, key):
         return self.data.get(key, None)
@@ -61,11 +69,11 @@ class Market:
         return value_sum/amount_sum
 
     def buy(self, rate, amount):
-        print "BUY", self, rate, amount
+        #print "BUY", self, rate, amount
         self.data['bought'].append((rate, amount))
 
     def sell(self, rate, amount=None):
-        print "SELL", self, rate, amount
+        #print "SELL", self, rate, amount
         self.data['sold'].append((rate, amount))
 
     def set_callback(self, event, callback):

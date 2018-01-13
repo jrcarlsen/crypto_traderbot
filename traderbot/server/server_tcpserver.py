@@ -102,6 +102,9 @@ class Connection:
         # If there is data in the out buffer, send 4096 bytes of it
         data = self.buffer_out[:4096]
         self.buffer_out = self.buffer_out[4096:]
+        if not self.socket:
+            return False
+
         if data:
             debug(self, ">>> %s" % data)
             self.socket.send(data)

@@ -8,6 +8,11 @@ class LogicBase:
         self.killed = False
         self.lastrun = 0
 
+    def __repr__(self):
+        return "<{name}>".format(**{
+            'name': self.name,
+        })
+
     def save(self):
         self.data['market_data'] = {}
         for market_name, market_object in self.markets.items():
