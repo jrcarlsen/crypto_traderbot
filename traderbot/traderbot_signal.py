@@ -1,7 +1,6 @@
 ###############################################################################
 
 import time
-import pickle
 import config
 
 from traderbot_market import Market
@@ -16,39 +15,42 @@ class Signal:
         self.lastrun = 0
         self.created = time.time()
        
-        # If an ID was provided, then we need to load it from disk
-        if load_id:
-            self.load()
-
     def description(self):
-        return "<Signal %i>" % self.data['id']
-
-    def _myfilename(self):
-        return '%s/%s' % (config.SIGNAL_PATH, self.get_id())
+        return "<signal id='%i'>" % self.data['id']
 
     def age(self):
         return time.time()-self.created
 
     def init(self):
-        self.save()
         # Start logic engines
-        for logic_class, config in self.traderbot.logic.items():
+        for logic_uuid, logic_info in self.traderbot.logic.items():
+            logic_class, config = logic_info
             logic_object = logic_class(self, config)
-            self.logic[logic_object.name] = logic_object
+            self.logic[logic_uuid] = logic_object
 
-    def load(self):
-        self.data = pickle.load(open(self._myfilename(), 'rb'))
-        print "Loaded data for:", self.get_id()
-#        for logic_name in self.data['logic']:
-#            logic = self.traderbot 
+    def set_data(self, data):
+        print self, "set_data()"
+        print data
+        self.data = data
+        for logic_uuid in data.get('logic', {}):
+            if not self.traderbot.logic.has_key(logic_uuid):
+                print "Logic %s no longer exists" % logic_uuid
+                print self.traderbot.logic
+                continue
 
-    def save(self):
+            logic_class, config = self.traderbot.logic[logic_uuid]
+            logic_object = logic_class(self, config)
+            logic_object.set_data(data['logic'][logic_uuid])
+            self.logic[logic_uuid] = logic_object
+
+    def get_data(self):
         # Collect data from the logic engines
-        self.data['logic'] = {}
+        if not self.data.has_key('logic'):
+            self.data['logic'] = {}
+
         for name, logic_object in self.logic.items():
             self.data['logic'][name] = logic_object.get_data()
-        print self, self.data
-        pickle.dump(self.data, open(self._myfilename(), 'wb'))
+        return self.data
 
     def get(self, key):
         return self.data.get(key, None)
@@ -57,6 +59,7 @@ class Signal:
         return self.data.get('id', -1)
 
     def get_market(self, exchange_name, market):
+        print self.description, "get_market()"
         exchange_object = self.traderbot.exchanges.get(exchange_name.lower(), None)
         if not exchange_object:
             print "Unable to get Exchange for", exchange_name
@@ -68,8 +71,14 @@ class Signal:
 
         return Market(exchange_object, market)
         
+    def load_market(self, data):
+        print self.description, "load_market()"
+        return None
+        #print data
+        #exchange_object = self.traderbot.exchanges.get(exchange_name.lower(), None)
+        #raise SystemExit
+
     def run(self):
-        changes = False
         logic_items = list(self.logic.items())
         for logic_name, logic_object in logic_items:
             if logic_object.killed:
@@ -80,9 +89,6 @@ class Signal:
                 continue
             logic_object.lastrun = now
             logic_object.run()
-            changes = True
-        if changes:
-            self.save()
 
 ###############################################################################
 

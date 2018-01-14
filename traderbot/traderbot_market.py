@@ -1,15 +1,14 @@
 class Market:
     def __init__(self, exchange_object, market_name):
+        self.market_name = market_name
         self.exchange = exchange_object
-        self.market = market_name
-        self.data = {}
         self.callback = {}
         self._init_values()
 
     def description(self):
-        return "<Market market='{market}' exchange='{exchange}' bid='{bid}' highest='{highest}' lowest='{lowest}'>".format(**{
+        return "<market market='{market}' exchange='{exchange}' bid='{bid}' highest='{highest}' lowest='{lowest}'>".format(**{
             'exchange':     self.exchange.get_name(),
-            'market':       self.market,
+            'market':       self.market_name,
             'bid':          self.bid_current(),
             'highest':      self.bid_highest(),
             'lowest':       self.bid_lowest(),
@@ -17,6 +16,8 @@ class Market:
 
     def _init_values(self):
         self.data = {
+            'exchange_market':  self.market_name,
+            'exchange_name':    self.exchange.name,
             'bought':           [],
             'sold':             [],
             'bid_highest':      self.bid_current(),
@@ -48,7 +49,7 @@ class Market:
 
     def bid_current(self, cached=True):
         """Get the current bid"""
-        return self.exchange.get_market(self.market, 'bid')
+        return self.exchange.get_market(self.market_name, 'bid')
 
     def bought(self):
         return self._get_value('bought')
@@ -79,9 +80,11 @@ class Market:
     def set_callback(self, event, callback):
         self.callback[event] = [callback, 0]
 
+    def set_data(self, data):
+        self.data = data
+
     def run(self):
         self._update_values()
-
         for event in ('balance', 'market'):
             if not self.callback.has_key(event):
                 continue

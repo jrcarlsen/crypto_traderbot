@@ -62,7 +62,6 @@ class Exchange(ExchangeBase):
         if cached and time.time() - self.data['last_balance_poll'] < self.config['POLL_FREQUENCY']:
             return False
 
-
         self.data['last_balance_poll'] = time.time()
 
         result = self.bittrex.get_balances()

@@ -4,8 +4,9 @@
 
 import os
 import time
-
+import pickle
 import config
+
 from traderbot_signal import Signal
 from traderbot_commands import execute_command
 
@@ -19,19 +20,28 @@ class TraderBot:
         self.servers = {}
         self.exchanges = {}
         self.logic = {}
-        self._load_signals()
+        self.lastsave = 0
 
     ############################################################################
     
     def _load_signals(self):
         for signal_id in os.listdir(config.SIGNAL_PATH):
+            # There may be other files than just the signals here, we only want
+            # to load the files where the name can be converted to and integer.
             try:
                 signal_id_int = int(signal_id)
             except ValueError:
                 continue
 
-            signal = Signal(self, signal_id)
+            signal_data = pickle.load(open(config.SIGNAL_PATH+signal_id, 'rb'))
+            signal = Signal(self, signal_id_int)
+            signal.set_data(signal_data)
             self.signals[signal_id_int] = signal
+
+    def _save_signals(self):
+        for signal_id, signal_object in self.signals.items():
+            data = signal_object.get_data()
+            pickle.dump(data, open(config.SIGNAL_PATH+str(signal_id), 'wb'))
 
     def new_signal(self, newdata):
         signal = Signal(self)
@@ -65,7 +75,7 @@ class TraderBot:
     def register_logic(self, logic_module, config):
         """Register logic modules that will executed by Signals"""
         # The Logic will instantiated by the Signals
-        self.logic[logic_module] = config
+        self.logic[logic_module.uuid] = (logic_module, config)
  
     ############################################################################
     
@@ -96,9 +106,18 @@ class TraderBot:
         remaining_time = max(0, self.config.LOOP_DELAY-(time.time()-ts))
         self.run_signals(max_time=remaining_time)
 
+        # Save every 5 seconds
+        if time.time()-self.lastsave > 5:
+            self.lastsave = time.time()
+            self._save_signals()
+
         # Spend the rest of our loop time listening for commands
         remaining_time = max(0, self.config.LOOP_DELAY-(time.time()-ts))
         self.run_servers(max_time=remaining_time)
+
         return self.running
+
+    def load(self):
+        self._load_signals()
 
 ################################################################################

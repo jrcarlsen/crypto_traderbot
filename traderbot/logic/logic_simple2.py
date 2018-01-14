@@ -12,6 +12,7 @@ from traderbot.logic import LogicBase
 
 class Logic(LogicBase):
     interval = 5
+    uuid = '29a976e5-6e6c-46af-b82e-dfbce3fec497'
     
     def __init__(self, signal, config):
         LogicBase.__init__(self, signal, config)

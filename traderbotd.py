@@ -24,6 +24,9 @@ traderbot.register_exchange(exchange_bittrex, config.bittrex)
 traderbot.register_logic(logic_simple.Logic, config.logic)
 traderbot.register_logic(logic_simple2.Logic, config.logic)
 
+# Load data from disk
+traderbot.load()
+
 # Run the traderbot loop until it wants to quit
 while True:
     if not traderbot.run():

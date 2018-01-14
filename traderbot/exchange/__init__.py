@@ -20,8 +20,8 @@ class ExchangeBase:
         return self.balance_data[currency][key]
 
     def supports_market(self, market):
-        # FIXME: Not implemented
-        return True
+        self._update_markets()
+        return self.market_data.has_key(market)
 
 ################################################################################
 

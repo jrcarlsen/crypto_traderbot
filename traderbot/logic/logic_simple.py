@@ -12,11 +12,11 @@ from traderbot.logic import LogicBase
 
 class Logic(LogicBase):
     interval = 5
+    uuid = 'dd481183-fca4-4526-aeb6-1fc6495438e6'
     
     def __init__(self, signal, config):
         LogicBase.__init__(self, signal, config)
         self._set_name(__file__)
-        self.signal = signal
        
         # Try to get an exchange object we can work with, if we fail to get the
         # object, we kill ourself. 
