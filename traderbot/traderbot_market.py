@@ -30,13 +30,13 @@ class Market:
     def _get_value(self, key):
         return self.data.get(key, None)
 
-    def diff_highest(self):
+    def diff_highest(self, cached=True):
         """Difference in percent from the highest bid we've seen"""
-        return (self.bid_current()/self.bid_highest()*100)-100
+        return (self.bid_current(cached)/self.bid_highest()*100)-100
 
-    def diff_bought(self):
+    def diff_bought(self, cached=True):
         """Difference in percent from the average buying rate"""
-        return (self.bid_current()/self.bought_average_rate()*100)-100
+        return (self.bid_current(cached)/self.bought_average_rate(cached)*100)-100
 
     def bid_highest(self):
         """The highest bid we've seen so far"""
