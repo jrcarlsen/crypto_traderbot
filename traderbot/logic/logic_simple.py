@@ -11,11 +11,11 @@ from traderbot.logic import LogicBase
 ################################################################################
 
 class Logic(LogicBase):
-    name = 'logic_simple'
     interval = 5
     
     def __init__(self, signal, config):
-        LogicBase.__init__(self)
+        LogicBase.__init__(self, signal, config)
+        self._set_name(__file__)
         self.signal = signal
        
         # Try to get an exchange object we can work with, if we fail to get the
@@ -26,9 +26,6 @@ class Logic(LogicBase):
         else:
             self.register_market(self.market)
         
-            # Whenever the rates are updated, send them to the update() method.
-            self.market.set_callback('market', self.market_update)
-
     def market_update(self, market):
         # If we haven't bought anything yet, then lets buy at the current rate.
         if not market.bought():

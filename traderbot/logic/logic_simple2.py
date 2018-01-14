@@ -11,14 +11,12 @@ from traderbot.logic import LogicBase
 ################################################################################
 
 class Logic(LogicBase):
-    name = 'logic_simple2'
-    interval = 60
-    markets = {}
+    interval = 5
     
     def __init__(self, signal, config):
-        LogicBase.__init__(self)
-        self.signal = signal
-       
+        LogicBase.__init__(self, signal, config)
+        self._set_name(__file__)
+ 
         # Try to get an exchange object we can work with, if we fail to get the
         # object, we kill ourself. 
         market = signal.get_market('Bittrex', 'BTC-'+signal.get('currency'))
@@ -27,9 +25,6 @@ class Logic(LogicBase):
         else:
             self.register_market(market)
         
-            # Whenever the rates are updated, send them to the update() method.
-            market.set_callback('market', self.market_update)
-
     def market_update(self, market):
         # If we haven't bought anything yet, then lets buy at the current rate.
         if not market.bought():
@@ -46,4 +41,3 @@ class Logic(LogicBase):
             market.sell(market.bid_current(cached=False))
 
 ################################################################################
-

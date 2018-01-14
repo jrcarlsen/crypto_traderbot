@@ -80,7 +80,6 @@ class Market:
         self.callback[event] = [callback, 0]
 
     def run(self):
-        #if self.
         self._update_values()
 
         for event in ('balance', 'market'):

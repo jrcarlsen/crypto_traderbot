@@ -44,8 +44,10 @@ class Signal:
 
     def save(self):
         # Collect data from the logic engines
-        for name, logic_object in self.logic.values():
+        self.data['logic'] = {}
+        for name, logic_object in self.logic.items():
             self.data['logic'][name] = logic_object.get_data()
+        print self, self.data
         pickle.dump(self.data, open(self._myfilename(), 'wb'))
 
     def get(self, key):
@@ -67,6 +69,7 @@ class Signal:
         return Market(exchange_object, market)
         
     def run(self):
+        changes = False
         logic_items = list(self.logic.items())
         for logic_name, logic_object in logic_items:
             if logic_object.killed:
@@ -77,6 +80,9 @@ class Signal:
                 continue
             logic_object.lastrun = now
             logic_object.run()
+            changes = True
+        if changes:
+            self.save()
 
 ###############################################################################
 
