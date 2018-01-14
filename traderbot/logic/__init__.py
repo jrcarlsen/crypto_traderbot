@@ -18,6 +18,9 @@ class LogicBase:
         for market_name, market_object in self.markets.items():
             self.data['market_data'][market_name] = market_object.data
 
+    def run(self):
+        self._update_markets()
+
     def register_market(self, market_object, market_name='default'):
         if not market_object:
             return False

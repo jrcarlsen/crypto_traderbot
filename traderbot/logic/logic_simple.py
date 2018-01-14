@@ -12,7 +12,7 @@ from traderbot.logic import LogicBase
 
 class Logic(LogicBase):
     name = 'logic_simple'
-    interval = 15
+    interval = 5
     
     def __init__(self, signal, config):
         LogicBase.__init__(self)
@@ -29,11 +29,6 @@ class Logic(LogicBase):
             # Whenever the rates are updated, send them to the update() method.
             self.market.set_callback('market', self.market_update)
 
-    def __repr__(self):
-        return "<{name}>".format(**{
-            'name': self.name,
-        })
-
     def market_update(self, market):
         # If we haven't bought anything yet, then lets buy at the current rate.
         if not market.bought():
@@ -47,12 +42,9 @@ class Logic(LogicBase):
 
         # If we drop more than 2% below the best rate, then we sell everything.
         if market.diff_highest() < -2.0:
-            market.sell()
+            market.sell(market.bid_current(cached=False))
             self.killed = True
             return
-
-    def run(self):
-        self._update_markets()
 
 ################################################################################
 

@@ -43,10 +43,7 @@ class Logic(LogicBase):
 
         # If we drop more than 2% below the best rate, then we sell everything.
         if market.diff_highest() < -5.0:
-            market.sell()
-
-    def run(self):
-        self._update_markets()
+            market.sell(market.bid_current(cached=False))
 
 ################################################################################
 
