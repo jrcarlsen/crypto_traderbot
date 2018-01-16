@@ -20,6 +20,7 @@ class Market:
             'exchange_name':    self.exchange.name,
             'bought':           [],
             'sold':             [],
+            'balance':          0,
             'bid_highest':      self.bid_current(),
             'bid_lowest':       self.bid_current(),
         }
@@ -56,8 +57,11 @@ class Market:
 
     def bought_average_rate(self):
         bought      = self.bought()
-        value_sum   = sum([amount*rate for amount, rate in bought])
-        amount_sum  = sum([amount for amount, rate in bought])
+        try:
+            value_sum   = sum([amount*rate for amount, rate in bought])
+            amount_sum  = sum([amount for amount, rate in bought])
+        except TypeError:
+            return 0
         return value_sum/amount_sum
 
     def sold(self):
@@ -65,20 +69,33 @@ class Market:
 
     def sold_average_rate(self):
         sold        = self.sold()
-        value_sum   = sum([amount*rate for amount, rate in sold])
-        amount_sum  = sum([amount for amount, rate in sold])
+        try:
+            value_sum   = sum([amount*rate for amount, rate in sold])
+            amount_sum  = sum([amount for amount, rate in sold])
+        except TypeError:
+            return 0
         return value_sum/amount_sum
 
     def balance(self):
-        return 0
+        return self.data.get('balance', 0)
 
     def buy(self, rate, amount):
         print "BUY", self, rate, amount
+        self.data['balance'] = self.balance()+amount 
         self.data['bought'].append((rate, amount))
+        return True
 
     def sell(self, rate, amount=None):
+        if not amount:
+            amount = self.balance()
+
+        if amount <= 0:
+            return False
+
         print "SELL", self, rate, amount
+        self.data['balance'] = self.balance()-amount
         self.data['sold'].append((rate, amount))
+        return True
 
     def set_callback(self, event, callback):
         self.callback[event] = [callback, 0]

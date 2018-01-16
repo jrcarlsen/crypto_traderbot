@@ -1,5 +1,9 @@
 ################################################################################
 
+from datetime import datetime
+
+################################################################################
+
 class LogicBase:
     # How often do we want run() to be called?
     interval = 5
@@ -16,6 +20,12 @@ class LogicBase:
         self.name = name.replace('.pyc', '.py')
         if self.name.find('/') != -1:
             self.name = self.name.rsplit('/',1)[1]
+
+    def log_write(self, message):
+        timestamp = str(datetime.now())
+        log_entry = "[%s] %s" % (timestampe, message)
+        print log_entry
+        open('logs/%s.log' % self.name, 'w').write(log_entry+'\n')
 
     def description(self):
         return "<{name}>".format(**{
