@@ -69,12 +69,15 @@ class Market:
         amount_sum  = sum([amount for amount, rate in sold])
         return value_sum/amount_sum
 
+    def balance(self):
+        return 0
+
     def buy(self, rate, amount):
-        #print "BUY", self, rate, amount
+        print "BUY", self, rate, amount
         self.data['bought'].append((rate, amount))
 
     def sell(self, rate, amount=None):
-        #print "SELL", self, rate, amount
+        print "SELL", self, rate, amount
         self.data['sold'].append((rate, amount))
 
     def set_callback(self, event, callback):
