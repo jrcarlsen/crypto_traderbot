@@ -10,16 +10,15 @@ from traderbot_market import Market
 class Signal:
     def __init__(self, traderbot, load_id=None):
         self.traderbot = traderbot
-        self.data = {'id': load_id, 'logic': {}}
+        self.data = {'id': load_id, 'logic': {}, 'created': time.time()}
         self.logic = {}
         self.lastrun = 0
-        self.created = time.time()
        
     def description(self):
         return "<signal id='%i'>" % self.data['id']
 
     def age(self):
-        return time.time()-self.created
+        return time.time()-self.data.get('created', 0)
 
     def init(self):
         # Start logic engines
@@ -29,8 +28,6 @@ class Signal:
             self.logic[logic_uuid] = logic_object
 
     def set_data(self, data):
-        print self, "set_data()"
-        print data
         self.data = data
         for logic_uuid in data.get('logic', {}):
             if not self.traderbot.logic.has_key(logic_uuid):
@@ -40,7 +37,8 @@ class Signal:
 
             logic_class, config = self.traderbot.logic[logic_uuid]
             logic_object = logic_class(self, config)
-            logic_object.set_data(data['logic'][logic_uuid])
+            if not logic_object.set_data(data['logic'][logic_uuid]):
+                continue
             self.logic[logic_uuid] = logic_object
 
     def get_data(self):
@@ -81,7 +79,7 @@ class Signal:
     def run(self):
         logic_items = list(self.logic.items())
         for logic_name, logic_object in logic_items:
-            if logic_object.killed:
+            if logic_object.killed():
                 del self.logic[logic_name]
 
             now = time.time()

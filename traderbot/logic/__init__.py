@@ -1,5 +1,6 @@
 ################################################################################
 
+import os
 from datetime import datetime
 
 ################################################################################
@@ -13,7 +14,6 @@ class LogicBase:
         self.config = config
         self.data = {'market_data': {}, 'uuid': self.uuid}
         self.markets = {}
-        self.killed = False
         self.lastrun = 0
 
     def _set_name(self, name):
@@ -23,9 +23,15 @@ class LogicBase:
 
     def log_write(self, message):
         timestamp = str(datetime.now())
-        log_entry = "[%s] %s" % (timestampe, message)
+        log_entry = "[%s] %s" % (timestamp, message)
+
+        path = "logs/%s" % self.signal.get_id()
+        if not os.path.exists(path):
+            print path
+            os.system('mkdir -p %s' % path)
+        
         print log_entry
-        open('logs/%s.log' % self.name, 'w').write(log_entry+'\n')
+        open('%s/%s.log' % (path, self.name), 'a').write(log_entry+'\n')
 
     def description(self):
         return "<{name}>".format(**{
@@ -40,8 +46,18 @@ class LogicBase:
 
     def set_data(self, data):
         self.data = data
+        if self.killed():
+            return False
+
         for market_name in self.data['market_data']:
             self.markets[market_name].set_data(self.data['market_data'][market_name])
+        return True
+
+    def kill(self):
+        self.data['killed'] = True
+
+    def killed(self):
+        return self.data.get('killed', False)
 
     def run(self):
         self._update_markets()

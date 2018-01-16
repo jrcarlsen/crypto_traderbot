@@ -11,8 +11,9 @@ from traderbot.logic import LogicBase
 ################################################################################
 
 class Logic(LogicBase):
-    interval = 5
-    uuid = 'dd481183-fca4-4526-aeb6-1fc6495438e6'
+    uuid = '04872c9c-6917-46cc-b737-435ffc510bf0'
+    interval = 60
+    period = 60*60*6 # 6 hours
     
     def __init__(self, signal, config):
         LogicBase.__init__(self, signal, config)
@@ -25,25 +26,22 @@ class Logic(LogicBase):
             self.kill()
         else:
             self.register_market(self.market)
-        
+
+    def description(self):
+        time_left = (self.period)-self.signal.age()
+        return "<%s time_left='%i'>" % (self.name, time_left)
+
     def market_update(self, market):
         # If we haven't bought anything yet, then lets buy at the current rate.
         if not market.bought():
             market.buy(market.bid_current(), self.signal.get('amount'))
             return
 
-        # If signal is less than 1 minute old, then lets not make any decisions
-        # yet.
-        if self.signal.age() < 60:
-            return
-
-        # If we drop more than 2% below the best rate, then we sell everything.
-        if market.diff_highest() < -2.0:
+        if self.signal.age() > self.period:
             market.sell(market.bid_current(cached=False))
-            self.log_write('DONE: {"signal": %i, "market": "%s", "bought": %0.8f, "sold": %0.8f, "best": %0.8f}' % (
-                self.signal.get_id(), market.market_name, market.bought_average_rate(), market.sold_average_rate(), market.bid_highest()))
+            self.log_write('DONE: {"signal": %i, "market": "%s", "bought": %0.8f, "sold": %0.8f, "best": %0.8f, "period": %i}' % (
+                self.signal.get_id(), market.market_name, market.bought_average_rate(), market.sold_average_rate(), market.bid_highest(), self.period))
             self.kill()
-            return
 
 ################################################################################
 

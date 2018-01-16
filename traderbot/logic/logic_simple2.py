@@ -22,14 +22,18 @@ class Logic(LogicBase):
         # object, we kill ourself. 
         market = signal.get_market('Bittrex', 'BTC-'+signal.get('currency'))
         if not market:
-            self.killed = True
+            self.kill()
         else:
             self.register_market(market)
         
     def market_update(self, market):
         # If we haven't bought anything yet, then lets buy at the current rate.
         if not market.bought():
-            market.buy(market.bid_current(), self.signal.get('amount'))
+            ask_current = market.ask_current(cached=False)
+            ask_amount  = self.signal.get('amount')
+            market.buy(ask_current, ask_amount)
+            self.log_write('BUY %s: %0.8f @ %0.8f' % (
+                market.market_name, ask_amount, ask_current))
             return
 
         # If signal is less than 1 minute old, then lets not make any decisions
@@ -39,10 +43,14 @@ class Logic(LogicBase):
 
         # If we drop more than 2% below the best rate, then we sell everything.
         if market.diff_highest() < -5.0:
-            market.sell(market.bid_current(cached=False))
-            self.log_write('DONE: {"bought": %0.8f, "sold": %0.8f, "best": %0.8f}' % (
-                market.bought_average_rate(), market.sold_average_rate(), bid_highest()))
-            self.killed = True
+            bid_current = market.bid_current(cached=False)
+            bid_amount  = market.balance()
+            market.sell(bid_current, bid_amount)
+            self.log_write('SELL %s: %0.8f @ %0.8f' % (
+                market.market_name, bid_amount, bid_current))
+            self.log_write('DONE: {"signal": %i, "market": "%s", "bought": %0.8f, "sold": %0.8f, "best": %0.8f}' % (
+                self.signal.get_id(), market.market_name, market.bought_average_rate(), market.sold_average_rate(), market.bid_highest()))
+            self.kill()
             return
 
 ################################################################################

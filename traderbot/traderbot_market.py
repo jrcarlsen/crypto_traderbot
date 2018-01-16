@@ -23,11 +23,15 @@ class Market:
             'balance':          0,
             'bid_highest':      self.bid_current(),
             'bid_lowest':       self.bid_current(),
+            'bid_highest':      self.ask_current(),
+            'bid_lowest':       self.ask_current(),
         }
 
     def _update_values(self):
         self.data['bid_lowest'] = min(self.bid_lowest(), self.bid_current())
         self.data['bid_highest'] = max(self.bid_highest(), self.bid_current())
+        self.data['ask_lowest'] = min(self.ask_lowest(), self.ask_current())
+        self.data['ask_highest'] = max(self.ask_highest(), self.ask_current())
 
     def _get_value(self, key):
         return self.data.get(key, None)
@@ -39,6 +43,18 @@ class Market:
     def diff_bought(self, cached=True):
         """Difference in percent from the average buying rate"""
         return (self.bid_current(cached)/self.bought_average_rate(cached)*100)-100
+
+    def ask_highest(self):
+        """The highest bid we've seen so far"""
+        return self._get_value('ask_highest')
+
+    def ask_lowest(self):
+        """The lowest bid we've seen"""
+        return self._get_value('ask_lowest')
+
+    def ask_current(self, cached=True):
+        """Get the current bid"""
+        return self.exchange.get_market(self.market_name, 'ask')
 
     def bid_highest(self):
         """The highest bid we've seen so far"""
@@ -58,8 +74,8 @@ class Market:
     def bought_average_rate(self):
         bought      = self.bought()
         try:
-            value_sum   = sum([amount*rate for amount, rate in bought])
-            amount_sum  = sum([amount for amount, rate in bought])
+            value_sum   = sum([amount*rate for rate, amount in bought])
+            amount_sum  = sum([amount for rate, amount in bought])
         except TypeError:
             return 0
         return value_sum/amount_sum
@@ -68,11 +84,14 @@ class Market:
         return self._get_value('sold')
 
     def sold_average_rate(self):
-        sold        = self.sold()
+        sold = self.sold()
         try:
-            value_sum   = sum([amount*rate for amount, rate in sold])
-            amount_sum  = sum([amount for amount, rate in sold])
+            value_sum   = sum([amount*rate for rate, amount in sold])
+            amount_sum  = sum([amount for rate, amount in sold])
         except TypeError:
+            return 0
+        
+        if amount_sum == 0:
             return 0
         return value_sum/amount_sum
 
@@ -80,7 +99,7 @@ class Market:
         return self.data.get('balance', 0)
 
     def buy(self, rate, amount):
-        print "BUY", self, rate, amount
+        #self.log_write("BUY %s %s %s" % (self.description, rate, amount))
         self.data['balance'] = self.balance()+amount 
         self.data['bought'].append((rate, amount))
         return True
@@ -92,7 +111,7 @@ class Market:
         if amount <= 0:
             return False
 
-        print "SELL", self, rate, amount
+        #self.log_write("SELL %s %s %s" % (self.description, rate, amount))
         self.data['balance'] = self.balance()-amount
         self.data['sold'].append((rate, amount))
         return True
