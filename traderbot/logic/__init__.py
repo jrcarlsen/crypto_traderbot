@@ -23,7 +23,7 @@ class LogicBase:
 
     def log_write(self, message):
         timestamp = str(datetime.now())
-        log_entry = "[%s] %s" % (timestamp, message)
+        log_entry = "[%s](%i) %s" % (timestamp, self.signal.get_id(), message)
 
         path = "logs/%s" % self.signal.get_id()
         if not os.path.exists(path):
@@ -53,8 +53,20 @@ class LogicBase:
             self.markets[market_name].set_data(self.data['market_data'][market_name])
         return True
 
+    def log_status(self):
+        self.log_write('DONE: {"signal": %i, "market": "%s", "bought": %0.8f, "sold": %0.8f, "best": %0.8f, "best-pct": %0.1f, "sale-percent": %0.1f}' % (
+            self.signal.get_id(), 
+            self.market.market_name, 
+            self.market.bought_average_rate(), 
+            self.market.sold_average_rate(), 
+            self.market.bid_highest(),
+            self.market.best_percent(), 
+            self.market.status_percent()))
+        return True
+ 
     def kill(self):
         self.data['killed'] = True
+        return True
 
     def killed(self):
         return self.data.get('killed', False)

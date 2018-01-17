@@ -40,8 +40,9 @@ class Logic(LogicBase):
         # If we drop more than 2% below the best rate, then we sell everything.
         if market.diff_highest() < -2.0:
             market.sell(market.bid_current(cached=False))
-            self.log_write('DONE: {"signal": %i, "market": "%s", "bought": %0.8f, "sold": %0.8f, "best": %0.8f}' % (
-                self.signal.get_id(), market.market_name, market.bought_average_rate(), market.sold_average_rate(), market.bid_highest()))
+            self.log_status()
+#            self.log_write('DONE: {"signal": %i, "market": "%s", "bought": %0.8f, "sold": %0.8f, "best": %0.8f}' % (
+#                self.signal.get_id(), market.market_name, market.bought_average_rate(), market.sold_average_rate(), market.bid_highest()))
             self.kill()
             return
 

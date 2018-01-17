@@ -13,7 +13,14 @@ class Signal:
         self.data = {'id': load_id, 'logic': {}, 'created': time.time()}
         self.logic = {}
         self.lastrun = 0
-       
+      
+    def killed(self):
+        if not self.logic:
+            return True
+    
+    def kill(self):
+        self.logic = {}
+ 
     def description(self):
         return "<signal id='%i'>" % self.data['id']
 
@@ -57,7 +64,6 @@ class Signal:
         return self.data.get('id', -1)
 
     def get_market(self, exchange_name, market):
-        print self.description, "get_market()"
         exchange_object = self.traderbot.exchanges.get(exchange_name.lower(), None)
         if not exchange_object:
             print "Unable to get Exchange for", exchange_name
@@ -69,13 +75,6 @@ class Signal:
 
         return Market(exchange_object, market)
         
-    def load_market(self, data):
-        print self.description, "load_market()"
-        return None
-        #print data
-        #exchange_object = self.traderbot.exchanges.get(exchange_name.lower(), None)
-        #raise SystemExit
-
     def run(self):
         logic_items = list(self.logic.items())
         for logic_name, logic_object in logic_items:

@@ -39,8 +39,9 @@ class Logic(LogicBase):
 
         if self.signal.age() > self.period:
             market.sell(market.bid_current(cached=False))
-            self.log_write('DONE: {"signal": %i, "market": "%s", "bought": %0.8f, "sold": %0.8f, "best": %0.8f, "period": %i}' % (
-                self.signal.get_id(), market.market_name, market.bought_average_rate(), market.sold_average_rate(), market.bid_highest(), self.period))
+            self.log_status()
+#            self.log_write('DONE: {"signal": %i, "market": "%s", "bought": %0.8f, "sold": %0.8f, "best": %0.8f, "period": %i}' % (
+#                self.signal.get_id(), market.market_name, market.bought_average_rate(), market.sold_average_rate(), market.bid_highest(), self.period))
             self.kill()
 
 ################################################################################

@@ -20,11 +20,11 @@ class Logic(LogicBase):
  
         # Try to get an exchange object we can work with, if we fail to get the
         # object, we kill ourself. 
-        market = signal.get_market('Bittrex', 'BTC-'+signal.get('currency'))
-        if not market:
+        self.market = signal.get_market('Bittrex', 'BTC-'+signal.get('currency'))
+        if not self.market:
             self.kill()
         else:
-            self.register_market(market)
+            self.register_market(self.market)
         
     def market_update(self, market):
         # If we haven't bought anything yet, then lets buy at the current rate.
@@ -48,8 +48,7 @@ class Logic(LogicBase):
             market.sell(bid_current, bid_amount)
             self.log_write('SELL %s: %0.8f @ %0.8f' % (
                 market.market_name, bid_amount, bid_current))
-            self.log_write('DONE: {"signal": %i, "market": "%s", "bought": %0.8f, "sold": %0.8f, "best": %0.8f}' % (
-                self.signal.get_id(), market.market_name, market.bought_average_rate(), market.sold_average_rate(), market.bid_highest()))
+            self.log_status()
             self.kill()
             return
 

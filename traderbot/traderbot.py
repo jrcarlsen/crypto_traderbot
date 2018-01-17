@@ -81,11 +81,15 @@ class TraderBot:
     
     def run_signals(self, max_time=1):
         ts = time.time()
-        for signal in self.signals.values():
+        signal_objects = list(self.signals.values())
+        for signal_object in signal_objects:
             remaining_time = max_time-(time.time()-ts)
             if remaining_time < 0:
                 break
-            signal.run()
+            if signal_object.killed():
+                del self.signals[signal_object.get_id()]
+                continue
+            signal_object.run()
 
     def run_servers(self, max_time):
         # Split our available time evenly between the registered servers

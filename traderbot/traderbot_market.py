@@ -6,7 +6,7 @@ class Market:
         self._init_values()
 
     def description(self):
-        return "<market market='{market}' exchange='{exchange}' bid='{bid}' highest='{highest}' lowest='{lowest}'>".format(**{
+        return "<market market='{market}' exchange='{exchange}' bid='{bid:0.8f}' highest='{highest:0.8f}' lowest='{lowest:0.8f}'>".format(**{
             'exchange':     self.exchange.get_name(),
             'market':       self.market_name,
             'bid':          self.bid_current(),
@@ -28,21 +28,43 @@ class Market:
         }
 
     def _update_values(self):
-        self.data['bid_lowest'] = min(self.bid_lowest(), self.bid_current())
+        self.data['bid_lowest']  = min(self.bid_lowest(),  self.bid_current())
         self.data['bid_highest'] = max(self.bid_highest(), self.bid_current())
-        self.data['ask_lowest'] = min(self.ask_lowest(), self.ask_current())
+        self.data['ask_lowest']  = min(self.ask_lowest(),  self.ask_current())
         self.data['ask_highest'] = max(self.ask_highest(), self.ask_current())
 
     def _get_value(self, key):
         return self.data.get(key, None)
 
+    def best_percent(self, cached=True):
+        bar = self.bought_average_rate()
+        if not bar:
+            return False
+        return (self.ask_highest()/bar*100)-100
+
+    def status_percent(self, cached=True):
+        bar = self.bought_average_rate()
+        bas = self.sold_average_rate()
+        if not bar or not bas:
+            return False
+        # FIXME: Not all coins may have sold, so this may not make sense
+        return (bas/bar*100)-100
+
     def diff_highest(self, cached=True):
         """Difference in percent from the highest bid we've seen"""
-        return (self.bid_current(cached)/self.bid_highest()*100)-100
+        try:
+            return (self.bid_current(cached)/self.bid_highest()*100)-100
+        except ZeroDivisionError:
+            # FIXME: What do I do here?
+            return False
 
     def diff_bought(self, cached=True):
         """Difference in percent from the average buying rate"""
-        return (self.bid_current(cached)/self.bought_average_rate(cached)*100)-100
+        try:
+            return (self.bid_current(cached)/self.bought_average_rate()*100)-100
+        except ZeroDivisionError:
+            # FIXME: What do I do here?
+            return False
 
     def ask_highest(self):
         """The highest bid we've seen so far"""
