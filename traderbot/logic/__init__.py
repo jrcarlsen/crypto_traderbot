@@ -54,8 +54,9 @@ class LogicBase:
         return True
 
     def log_status(self):
-        self.log_write('DONE: {"signal": %i, "market": "%s", "bought": %0.8f, "sold": %0.8f, "best": %0.8f, "best-pct": %0.1f, "sale-percent": %0.1f}' % (
+        self.log_write('DONE: {"signal": %i, "logic": "%s", "market": "%s", "bought": %0.8f, "sold": %0.8f, "best": %0.8f, "best-pct": %0.1f, "sale-percent": %0.1f}' % (
             self.signal.get_id(), 
+            self.name,
             self.market.market_name, 
             self.market.bought_average_rate(), 
             self.market.sold_average_rate(), 

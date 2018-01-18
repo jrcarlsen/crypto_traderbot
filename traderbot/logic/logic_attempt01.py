@@ -34,8 +34,12 @@ class Logic(LogicBase):
     def market_update(self, market):
         # If we haven't bought anything yet, then lets buy at the current rate.
         if not market.bought():
+            minimum_btc = 0.0006
+            if self.signal.get('confidence') > 0:
+                minimum_btc = 0.0012
+
             ask_current = market.ask_current(cached=False)
-            ask_amount  = market.btc_to_coin(max(self.signal.get('amount'), 0.0006))
+            ask_amount  = market.btc_to_coin(max(self.signal.get('amount'), minimum_btc))
             market.buy(ask_current*1.02, ask_amount)
             self.log_write('BUY %s: %0.8f @ %0.8f' % (
                 market.market_name, ask_amount, ask_current))
@@ -60,10 +64,12 @@ class Logic(LogicBase):
         # Sell 
         bid_current = market.bid_current(cached=False)
         bid_amount  = market.balance()
-        market.sell(bid_current, bid_amount)
+        market.sell(bid_current*0.97, bid_amount)
         self.log_write('SELL %s: %0.8f @ %0.8f' % (
             market.market_name, bid_amount, bid_current))
-        self.log_status()
-        self.kill()
+
+        if market.balance() <= 0:
+            self.log_status()
+            self.kill()
 
 ################################################################################

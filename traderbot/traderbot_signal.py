@@ -22,7 +22,7 @@ class Signal:
         self.logic = {}
  
     def description(self):
-        return "<signal id='%i'>" % self.data['id']
+        return "<signal id='%i' market='%s' confidence='%i'>" % (self.data['id'], self.get('currency'), self.get('confidence'))
 
     def age(self):
         return time.time()-self.data.get('created', 0)

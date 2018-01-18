@@ -46,5 +46,9 @@ get_order(uuid) = {
     }
 }
 
+{
+    u'message': u'', u'result': {u'OrderUuid': u'5b63af11-da8d-4c6e-b4d4-2ae0e53e828f', u'Opened': u'2018-01-18T16:57:49.147', u'PricePerUnit': 4.83e-06, 
+    u'Closed': u'2018-01-18T16:57:49.193', u'CancelInitiated': False, u'ReserveRemaining': 0.00050894, u'ImmediateOrCancel': True, u'Exchange': u'BTC-SC', u'Type': u'LIMIT_BUY', u'Price': 0.00050894, u'ConditionTarget': None, u'CommissionReserved': 1.27e-06, u'Condition': u'NONE', u'AccountId': None, u'IsConditional': False, u'CommissionPaid': 1.27e-06, u'CommissionReserveRemaining': 0.0, u'Limit': 4.85e-06, u'Quantity': 105.15463917, u'QuantityRemaining': 0.0, u'Reserved': 0.00050999, u'IsOpen': False, u'Sentinel': u'b26fdfe1-ade5-4dcc-8ac0-15abdaba7e3d'}, u'success': True}
+
 ################################################################################
 
