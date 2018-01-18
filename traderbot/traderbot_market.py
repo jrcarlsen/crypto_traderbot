@@ -65,6 +65,14 @@ class Market:
             # FIXME: What do I do here?
             return False
 
+    def diff_lowest(self, cached=True):
+        """Difference in percent from the highest bid we've seen"""
+        try:
+            return (self.bid_current(cached)/self.bid_lowest()*100)-100
+        except ZeroDivisionError:
+            # FIXME: What do I do here?
+            return False
+
     def diff_bought(self, cached=True):
         """Difference in percent from the average buying rate"""
         try:
