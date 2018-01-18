@@ -13,7 +13,7 @@ class Exchange(ExchangeBase):
     def __init__(self, tradebot, config):
         ExchangeBase.__init__(self)
         self.config = config
-        self.bittrex = bittrex.Bittrex(config['API_KEY'], config['API_SECRET'])
+        self.bittrex = bittrex.Bittrex(config['API_KEY'], config['API_SECRET'], api_version='v2.0')
 
         # Tracking of markets
         self.data['last_market_poll'] = 0    # When was the last time we tried to get data from their API
@@ -45,16 +45,16 @@ class Exchange(ExchangeBase):
         if not result.get('success', False):
             return False
 
-        for coin in result['result']:
-            market_name = coin['MarketName']
-            
+        for entry in result['result']:
+            market_name  = entry['Market']['MarketName']
             self.market_data[market_name] = {
-                'bid':      coin['Bid'],
-                'ask':      coin['Ask'],
-                'high':     coin['High'],
-                'low':      coin['Low'],
-                'volume':   coin['Volume'],
+                'bid':      entry['Summary']['Bid'],
+                'ask':      entry['Summary']['Ask'],
+                'high':     entry['Summary']['High'],
+                'low':      entry['Summary']['Low'],
+                'volume':   entry['Summary']['Volume'],
             }
+
         self.data['last_market_update'] = time.time()
         return True
 
@@ -71,16 +71,72 @@ class Exchange(ExchangeBase):
         if not result.get('success', False):
             return False
 
-        for coin in result['result']:
-            currency = coin['Currency']
+        for entry in result['result']:
+            currency = entry['Currency']['Currency']
             self.balance_data[currency] = {
-                'balance':      coin['Balance'],
-                'available':    coin['Available'],
-                'pending':      coin['Pending'],
+                'balance':      entry['Balance']['Balance'],
+                'available':    entry['Balance']['Available'],
+                'pending':      entry['Balance']['Pending'],
             }
 
         self.data['last_balance_update'] = time.time()
         return True    
+
+    def limit_sell(self, market, rate, quantity):
+        result = self.bittrex.trade_sell(
+            market=market, 
+            order_type='LIMIT', 
+            quantity=quantity, 
+            rate=rate, 
+            time_in_effect='IMMEDIATE_OR_CANCEL'
+        )
+        print "LIMIT_SELL", result
+        print market, 'LIMIT', "%0.8f" % quantity, rate, 'IMMEDIATE_OR_CANCEL'
+
+        if not result or result['success'] != True:
+            return False
+
+        order_id = result['result']['OrderId']
+        order = self.bittrex.get_order(uuid=order_id)
+        print order
+
+        if not order or order['success'] != True:
+            return False
+
+        order_rate      = order['result']['PricePerUnit']
+        order_quantity  = order['result']['Quantity']-order['result']['QuantityRemaining']
+        if order_quantity <= 0:
+            return False
+
+        return ((order_rate, order_quantity),)
+
+    def limit_buy(self, market, rate, quantity):
+        result = self.bittrex.trade_buy(
+            market=market, 
+            order_type='LIMIT', 
+            quantity=quantity, 
+            rate=rate, 
+            time_in_effect='IMMEDIATE_OR_CANCEL'
+        )
+
+        print "LIMIT_BUY", result
+        print market, 'LIMIT', "%0.8f" % quantity, rate, 'IMMEDIATE_OR_CANCEL'
+        if not result or result['success'] != True:
+            return False
+
+        order_id = result['result']['OrderId']
+        order = self.bittrex.get_order(uuid=order_id)
+        print order
+
+        if not order or order['success'] != True:
+            return False
+
+        order_rate      = order['result']['PricePerUnit']
+        order_quantity  = order['result']['Quantity']-order['result']['QuantityRemaining']
+        if order_quantity <= 0:
+            return False
+
+        return ((order_rate, order_quantity),)
 
     def run(self):
         self._update_markets()

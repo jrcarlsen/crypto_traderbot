@@ -1,0 +1,50 @@
+################################################################################
+
+limit_buy() = {
+    u'message': u'',
+    u'success': True,
+    u'result': {
+        u'OrderId': u'4ed52795-2d83-4456-a680-3e42513d7c1f',
+        u'BuyOrSell': u'Buy',
+        u'OrderType': u'LIMIT',
+        u'Rate': 0.00161996,
+        u'MarketName': u'BTC-OMG',
+        u'MarketCurrency': u'OMG',
+        u'Quantity': 0.62
+    }
+}
+
+################################################################################
+
+get_order(uuid) = {
+    u'message': u'',
+    u'success': True,
+    u'result': {
+        u'OrderUuid': u'c0b42a6b-1971-437d-94b7-a4ab787721af',
+        u'Opened': u'2018-01-18T15:03:57.12',
+        u'PricePerUnit': None,
+        u'Closed': u'2018-01-18T15:03:57.15',
+        u'CancelInitiated': False,
+        u'ReserveRemaining': 0.0011004,
+        u'ImmediateOrCancel': True,
+        u'Exchange': u'BTC-BCC',
+        u'Type': u'LIMIT_BUY',
+        u'Price': 0.0,
+        u'ConditionTarget': None,
+        u'CommissionReserved': 2.75e-06,
+        u'Condition': u'NONE',
+        u'AccountId': None,
+        u'IsConditional': False,
+        u'CommissionPaid': 0.0,
+        u'CommissionReserveRemaining': 2.75e-06,
+        u'Limit': 0.1572,
+        u'Quantity': 0.007,
+        u'QuantityRemaining': 0.007,
+        u'Reserved': 0.0011004,
+        u'IsOpen': False,
+        u'Sentinel': u'1b6320de-5ce1-4cf3-9d47-00db355f484a'
+    }
+}
+
+################################################################################
+

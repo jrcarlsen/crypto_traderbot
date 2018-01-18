@@ -1,5 +1,6 @@
 class Market:
-    def __init__(self, exchange_object, market_name):
+    def __init__(self, exchange_object, market_name, simulated=True):
+        self.simulated = simulated
         self.market_name = market_name
         self.exchange = exchange_object
         self.callback = {}
@@ -16,6 +17,7 @@ class Market:
 
     def _init_values(self):
         self.data = {
+            'simulated':        self.simulated,
             'exchange_market':  self.market_name,
             'exchange_name':    self.exchange.name,
             'bought':           [],
@@ -42,6 +44,9 @@ class Market:
 
     def _get_value(self, key):
         return self.data.get(key, None)
+
+    def is_simulated(self):
+        return self.data.get('simulated', True)
 
     def best_percent(self, cached=True):
         bar = self.bought_average_rate()
@@ -139,7 +144,7 @@ class Market:
             amount_sum  = sum([amount for rate, amount in sold])
         except TypeError:
             return 0
-        
+
         if amount_sum == 0:
             return 0
         return value_sum/amount_sum
@@ -147,23 +152,52 @@ class Market:
     def balance(self):
         return self.data.get('balance', 0)
 
-    def buy(self, rate, amount):
-        #self.log_write("BUY %s %s %s" % (self.description, rate, amount))
-        self.data['balance'] = self.balance()+amount 
-        self.data['bought'].append((rate, amount))
+    def buy(self, rate, quantity):
+        print "market.buy %0.8f @ %0.8f" % (quantity, rate)
+        if self.is_simulated():
+            self.data['balance'] = self.balance()+quantity
+            self.data['bought'].append((rate, quantity),)
+            return True
+
+        # FIXME: Real buy goes here
+        txs = self.exchange.limit_buy(self.market_name, rate, quantity)
+        if not txs:
+            return False
+        
+        for rate, quantity in txs:
+            self.data['balance'] = self.balance()+quantity
+            self.data['bought'].append((rate, quantity),)
         return True
+            
+    def sell(self, rate, quantity=None):
+        if not quantity:
+            quantity = self.balance()
 
-    def sell(self, rate, amount=None):
-        if not amount:
-            amount = self.balance()
-
-        if amount <= 0:
+        if quantity <= 0:
             return False
 
-        #self.log_write("SELL %s %s %s" % (self.description, rate, amount))
-        self.data['balance'] = self.balance()-amount
-        self.data['sold'].append((rate, amount))
+        # Do not allow the sale of more coins than we bought
+        quantity = min(quantity, self.balance())
+
+        if self.is_simulated():
+            self.data['balance'] = self.balance()-quantity
+            self.data['sold'].append((rate, quantity))
+            return True
+
+        # FIXME: Real sell goes here
+        txs = self.exchange.limit_sell(self.market_name, rate, quantity)
+        if not txs:
+            return False
+
+        for rate, quantity in txs:
+            self.data['balance'] = self.balance()-quantity
+            self.data['sold'].append((rate, quantity),)
         return True
+
+    def btc_to_coin(self, btc_amount, cached=True):
+        return btc_amount/self.ask_current(cached)
+
+################################################################################
 
     def set_callback(self, event, callback):
         self.callback[event] = [callback, 0]

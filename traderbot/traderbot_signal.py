@@ -37,6 +37,9 @@ class Signal:
     def set_data(self, data):
         self.data = data
         for logic_uuid in data.get('logic', {}):
+            if self.data['logic'][logic_uuid].get('killed', False):
+                continue
+
             if not self.traderbot.logic.has_key(logic_uuid):
                 print "Logic %s no longer exists" % logic_uuid
                 print self.traderbot.logic
@@ -63,17 +66,17 @@ class Signal:
     def get_id(self):
         return self.data.get('id', -1)
 
-    def get_market(self, exchange_name, market):
+    def get_market(self, exchange_name, market_name, simulated=True):
         exchange_object = self.traderbot.exchanges.get(exchange_name.lower(), None)
         if not exchange_object:
             print "Unable to get Exchange for", exchange_name
             return False
 
-        if not exchange_object.supports_market(market):
-            print exchange_name, "does not support the market", market
+        if not exchange_object.supports_market(market_name):
+            print exchange_name, "does not support the market", market_name
             return False
 
-        return Market(exchange_object, market)
+        return Market(exchange_object, market_name, simulated=simulated)
         
     def run(self):
         logic_items = list(self.logic.items())
