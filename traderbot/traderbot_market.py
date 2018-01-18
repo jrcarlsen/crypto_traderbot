@@ -25,6 +25,7 @@ class Market:
             'bid_lowest':       self.bid_current(),
             'bid_highest':      self.ask_current(),
             'bid_lowest':       self.ask_current(),
+            'ask_history':      [],
         }
 
     def _update_values(self):
@@ -32,6 +33,12 @@ class Market:
         self.data['bid_highest'] = max(self.bid_highest(), self.bid_current())
         self.data['ask_lowest']  = min(self.ask_lowest(),  self.ask_current())
         self.data['ask_highest'] = max(self.ask_highest(), self.ask_current())
+
+        if not self.data.has_key('ask_history'):
+            self.data['ask_history'] = []
+
+        self.data['ask_history'].append(self.ask_current())
+        self.data['ask_history'] = self.data['ask_history'][-50:]
 
     def _get_value(self, key):
         return self.data.get(key, None)
@@ -77,6 +84,18 @@ class Market:
     def ask_current(self, cached=True):
         """Get the current bid"""
         return self.exchange.get_market(self.market_name, 'ask')
+
+    def ask_trend_upwards(self, samples=8):
+        # FIXME: This is not the right way to calculate this
+        history = self.data['ask_history'][0-samples:]
+        average = sum(history)/float(len(history))
+        return average > self.ask_current()
+
+    def ask_trend_downwards(self, samples=8):
+        # FIXME: This is not the right way to calculate this
+        history = self.data['ask_history'][0-samples:]
+        average = sum(history)/float(len(history))
+        return average < self.ask_current()
 
     def bid_highest(self):
         """The highest bid we've seen so far"""
